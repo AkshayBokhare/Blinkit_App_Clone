@@ -6,6 +6,8 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import com.nts.userblinkitcone.models.Users
 import com.nts.userblinkitcone.utils.Utils
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.TimeUnit
@@ -13,9 +15,21 @@ import java.util.concurrent.TimeUnit
 class AuthViewModel : ViewModel() {
 
     private val _verificationId = MutableStateFlow<String?>(null)
-    private val _otpSend = MutableStateFlow(false)
-    val otpsend = _otpSend
+    private val _otpSent = MutableStateFlow(false)
 
+    val otpsent = _otpSent
+
+    private val _isSignedInSuccessfully= MutableStateFlow(false)
+     val isSignedInSuccessfully= _isSignedInSuccessfully
+
+    private val _isCurrentUser = MutableStateFlow(false)
+    val isCurrentUser =_isCurrentUser
+
+    init {
+        Utils.getAuthInstance().currentUser?.let {
+            _isCurrentUser.value =true
+        }
+    }
 
     fun sendOtp(userNumber:String,activity: Activity){
         val callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
@@ -31,7 +45,7 @@ class AuthViewModel : ViewModel() {
                 token: PhoneAuthProvider.ForceResendingToken,
             ) {
                 _verificationId.value = verificationId
-                _otpSend.value =true
+                _otpSent.value =true
 
             }
         }
@@ -42,6 +56,22 @@ class AuthViewModel : ViewModel() {
             .setActivity(activity) // Activity (for callback binding)
             .setCallbacks(callbacks) // OnVerificationStateChangedCallbacks
             .build()
-        PhoneAuthProvider.verifyPhoneNumber(options)
+         PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+     fun signInWithPhoneAuthCredential(otp: String, userNumber: String, user: Users) {
+
+        val credential = PhoneAuthProvider.getCredential(_verificationId.value.toString(), otp)
+
+        Utils.getAuthInstance().signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+
+                   FirebaseDatabase.getInstance().getReference("AllUsers").child("Users").child(user.uid!!).setValue(user)
+                    _isSignedInSuccessfully.value = true
+
+                } else {
+                }
+            }
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.nts.userblinkitcone.databinding.ProgressDialogBinding
 
 object Utils {
@@ -14,7 +15,6 @@ object Utils {
     fun showToast(context: Context,message:String){
         Toast.makeText(context,message,Toast.LENGTH_SHORT).show()
     }
-
     fun showDialog(context: Context,message: String){
         val progress = ProgressDialogBinding.inflate(LayoutInflater.from(context))
         progress.tvMessage.text = message
@@ -33,4 +33,9 @@ object Utils {
         }
         return firebaseAuthInstance!!
     }
+
+    fun getCurrentUserId() : String {
+        return FirebaseAuth.getInstance().currentUser!!.uid
+    }
+
 }

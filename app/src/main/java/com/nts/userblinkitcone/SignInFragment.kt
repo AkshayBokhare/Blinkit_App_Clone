@@ -1,5 +1,6 @@
 package com.nts.userblinkitcone
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
+import com.nts.userblinkitcone.activity.UsersMainActivity
 import com.nts.userblinkitcone.databinding.FragmentSignInBinding
 import com.nts.userblinkitcone.utils.Utils
 
@@ -38,6 +40,11 @@ class SignInFragment : Fragment() {
 
            if (number.isEmpty() || number.length != 10){
                Utils.showToast(requireContext(),"Please enter valid phone number")
+
+             // Just for bypass otp _ delete after Testing
+//               startActivity(Intent(requireActivity(), UsersMainActivity::class.java))
+//               requireActivity().finish()
+
            }else{
                val bundle =Bundle()
                bundle.putString("number",number)

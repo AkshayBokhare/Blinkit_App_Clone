@@ -1,5 +1,6 @@
 package com.nts.userblinkitcone
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -9,14 +10,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.nts.userblinkitcone.activity.UsersMainActivity
 import com.nts.userblinkitcone.databinding.FragmentSplashBinding
+import com.nts.userblinkitcone.viewmodels.AuthViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 
 class SplashFragment : Fragment() {
 
     private lateinit var splashBinding: FragmentSplashBinding
-
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,7 +34,16 @@ class SplashFragment : Fragment() {
         setStatusBarColor()
 
         Handler(Looper.getMainLooper()).postDelayed({
-          findNavController().navigate(R.id.action_splashFragment_to_signInFragment)
+            lifecycleScope.launch {
+                authViewModel.isCurrentUser.collect{
+                    if (it){
+                        startActivity(Intent(requireActivity(),UsersMainActivity::class.java))
+                        requireActivity().finish()
+                    }else{
+                        findNavController().navigate(R.id.action_splashFragment_to_signInFragment)
+                    }
+                }
+            }
         },3000)
 
 

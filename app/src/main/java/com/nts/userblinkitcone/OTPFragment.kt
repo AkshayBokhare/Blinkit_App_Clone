@@ -1,5 +1,6 @@
 package com.nts.userblinkitcone
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -9,14 +10,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.nts.userblinkitcone.activity.UsersMainActivity
 import com.nts.userblinkitcone.databinding.FragmentOTPBinding
+import com.nts.userblinkitcone.models.Users
 import com.nts.userblinkitcone.utils.Utils
 import com.nts.userblinkitcone.viewmodels.AuthViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
@@ -35,8 +36,47 @@ class OTPFragment : Fragment() {
         customizingEnteringOTP()
         onBackButtonClick()
         sendOTP()
-        //1.18.38 timestamp
+        onLoginButtonClicked()
+
+
+
         return otpBinding.root
+    }
+
+    private fun onLoginButtonClicked() {
+        otpBinding.btnLogin.setOnClickListener {
+
+
+            Utils.showDialog(requireContext(),"Signing you...")
+            val editTexts = arrayOf(otpBinding.etOtp1,otpBinding.etOtp2,otpBinding.etOtp3,otpBinding.etOtp4,otpBinding.etOtp5,otpBinding.etOtp6)
+           val otp= editTexts.joinToString (""){it.text.toString() }
+            if (otp.length < editTexts.size){
+                Utils.showToast(requireContext(),"Please enter right Otp")
+            }else{
+                editTexts.forEach { it.text?.clear() ; it.clearFocus() }
+                verifyOtp(otp)
+            }
+
+        }
+    }
+
+
+    private fun verifyOtp(otp: String) {
+
+        val user = Users(uid = Utils.getCurrentUserId(), userPhoneNumber = userNumber,userAddress = null)
+
+            authViewModel.signInWithPhoneAuthCredential(otp,userNumber,user)
+            lifecycleScope.launch {
+                authViewModel.isSignedInSuccessfully.collect{
+                    if (it){
+
+                        Utils.hideDialog()
+                        Utils.showToast(requireContext(),"Logged In Done")
+                        startActivity(Intent(requireActivity(),UsersMainActivity::class.java))
+                        requireActivity().finish()
+                    }
+                }
+            }
     }
 
     private fun sendOTP() {
@@ -46,7 +86,7 @@ class OTPFragment : Fragment() {
             authViewModel.apply {
                 sendOtp(userNumber,requireActivity())
                 lifecycleScope.launch {
-                    otpsend.collect {otpSent->
+                    otpsent.collect {otpSent->
                         if (otpSent){
                             Utils.hideDialog()
                             Utils.showToast(requireContext(),"OTP sent to the number...")

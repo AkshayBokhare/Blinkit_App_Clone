@@ -55,7 +55,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="A ZOMATO COMPANY"
+            android:text="A NEUTRINO COMPANY"
             android:letterSpacing="0.1"
             android:textSize="11.40sp"
             android:textColor="#070606"
